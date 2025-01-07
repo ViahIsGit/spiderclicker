@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Spider Clicker - Game</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Comic Neue', cursive;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      background: radial-gradient(circle, #1a1a1a, #000);
+      color: #fff;
+    }
+    .container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .top-left-buttons, .bottom-left-buttons {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .top-left-buttons {
+      top: 16px;
+      left: 16px;
+    }
+    .bottom-left-buttons {
+      bottom: 16px;
+      left: 16px;
+      flex-direction: row;
+    }
+    .button {
+      width: 48px;
+      height: 48px;
+      background-color: #222;
+      border: 2px solid #555;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      cursor: pointer;
+    }
+    .button span {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      font-size: 10px;
+      background-color: #333;
+      border: 1px solid #555;
+      border-radius: 50%;
+      padding: 2px 4px;
+    }
+    .right-panel {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 256px;
+      background-color: #222;
+      border: 2px solid #555;
+      border-radius: 8px;
+      padding: 8px;
+      overflow-y: auto;
+      max-height: 95vh; /* Definindo altura máxima para não ultrapassar a tela */
+    }
+    /* Barra de rolagem personalizada */
+    .right-panel::-webkit-scrollbar {
+      width: 8px; /* Largura da barra de rolagem */
+    }
+    .right-panel::-webkit-scrollbar-thumb {
+      background-color: #888; /* Cor da "bolinha" da barra de rolagem */
+      border-radius: 4px;
+      transition: background-color 0.3s ease; /* Efeito suave na cor */
+    }
+    .right-panel::-webkit-scrollbar-thumb:hover {
+      background-color: #555; /* Cor da bolinha ao passar o mouse */
+    }
+    .right-panel::-webkit-scrollbar-track {
+      background-color: #333; /* Cor de fundo da barra de rolagem */
+      border-radius: 4px;
+    }
+    .right-panel .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      border: 2px solid #555;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background-color: #333;
+    }
+    .center-info {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+    .center-info .info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .center-info .info .text {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .center-info .details {
+      font-size: 18px;
+    }
+    .main-spider {
+      position: relative;
+    }
+    .main-spider img {
+      width: 128px;
+      height: 128px;
+      cursor: pointer;
+    }
+    .main-spider .multiplier {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: #222;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      width: 300px;
+    }
+    .modal-button {
+      background: #555;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      margin: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .modal-button:hover {
+      background: #777;
+    }
+    .modal-close {
+      background: #333;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      margin-top: 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .modal-close:hover {
+      background: #555;
+    }
+  
+    /* Media Queries para dispositivos móveis */
+    @media (max-width: 768px) {
+      .right-panel {
+        width: 200px;
+      }
+      .main-spider img {
+        width: 100px;
+        height: 100px;
+      }
+      .center-info .info .text {
+        font-size: 20px;
+      }
+      .center-info .details {
+        font-size: 16px;
+      }
+      .button {
+        width: 40px;
+        height: 40px;
+      }
+      .modal-content {
+        width: 80%;
+      }
+    }
+  
+    @media (max-width: 480px) {
+      .right-panel {
+        width: 180px;
+      }
+      .main-spider img {
+        width: 80px;
+        height: 80px;
+      }
+      .center-info .info .text {
+        font-size: 18px;
+      }
+      .center-info .details {
+        font-size: 14px;
+      }
+      .button {
+        width: 36px;
+        height: 36px;
+      }
+      .modal-content {
+        width: 90%;
+      }
+    }
+  </style>
+  
+</head>
+<body>
+  <div class="container">
+    <div class="top-left-buttons">
+      <button class="button">
+        <i class="fas fa-cog"></i>
+      </button>
+    </div>
+    <div class="right-panel" id="shopItems"></div>
+    <div class="center-info">
+      <div class="info">
+        <div class="text" id="currencyDisplay">$0</div>
+      </div>
+      <div class="details" id="bonusDisplay">0 Bonus</div>
+      <div class="details" id="autoClickerDisplay">0 AutoClicker</div>
+    </div>
+    <div class="main-spider" onclick="increaseCurrency()">
+      <img alt="Large spider" src="imgs/Clicker.png" />
+    </div>
+    <div class="bottom-left-buttons">
+    
+    </div>
+  </div>
+
+  <!-- Modal de Configurações -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <h2>Configurações</h2>
+      <button class="modal-button" onclick="resetProgress()">Apagar Progresso</button>
+      <button class="modal-button" onclick="goToMenu()">Voltar ao Menu Inicial</button>
+      <button class="modal-close" onclick="closeModal()">Fechar</button>
+    </div>
+  </div>
+
+  <script>
+    let currency = 0;
+    let bonus = 0;
+    let autoClickers = 0;
+    let clickMultiplier = 1;
+
+    const items = [
+  { name: 'Aranha Micro', effect: '+1/Click', cost: 10, type: 'click', value: 1 },
+  { name: 'Teia Frágil', effect: '+1/Sec', cost: 10, type: 'auto', value: 1 },
+  { name: 'Aranhazinha', effect: '+10/Click', cost: 1000, type: 'click', value: 10 },
+  { name: 'Fortificação da Teia', effect: '+10/Sec', cost: 2500, type: 'auto', value: 10 },
+  { name: 'Expansão da Teia', effect: '+5/Sec', cost: 1200, type: 'auto', value: 5 },
+  { name: 'Aranha Pequena', effect: '+5/Click', cost: 600, type: 'click', value: 5 },
+  { name: 'Aranha Caçadora', effect: '+50/Click', cost: 7000, type: 'click', value: 50 },
+  { name: 'Upgrade do Ninho', effect: '+40/Sec', cost: 30000, type: 'auto', value: 40 },
+  { name: 'Aranha Rainha', effect: '+120/Click', cost: 50000, type: 'click', value: 120 },
+  { name: 'Aranha Venenosa', effect: '+75/Click', cost: 9000, type: 'click', value: 75 },
+  { name: 'Coletora de Seda', effect: '+60/Sec', cost: 15000, type: 'auto', value: 60 },
+  { name: 'Mestre da Teia', effect: '+100/Sec', cost: 20000, type: 'auto', value: 100 },
+  { name: 'Aranha Mãe', effect: '+200/Click', cost: 80000, type: 'click', value: 200 },
+  { name: 'Aranha Tóxica', effect: '+500/Click', cost: 120000, type: 'click', value: 500 },
+  { name: 'Teia Reforçada', effect: '+500/Sec', cost: 55000, type: 'auto', value: 500 },
+  { name: 'Aranha Mutante', effect: '+300/Click', cost: 90000, type: 'click', value: 300 },
+  { name: 'Fortaleza da Teia', effect: '+1000/Sec', cost: 100000, type: 'auto', value: 1000 },
+  { name: 'Aranha Spidey', effect: '+2500/Click', cost: 150000, type: 'click', value: 2500 },
+  { name: 'Império da Seda', effect: '+5000/Sec', cost: 200000, type: 'auto', value: 5000 },
+  { name: 'Aranha da Caverna', effect: '+3000/Click', cost: 250000, type: 'click', value: 3000 },
+  { name: 'Mega Teia', effect: '+4000/Sec', cost: 300000, type: 'auto', value: 4000 },
+  { name: 'Deus Aranha', effect: '+10000/Click', cost: 400000, type: 'click', value: 10000 },
+  { name: 'Aranha Antiga', effect: '+20000/Click', cost: 500000, type: 'click', value: 20000 },
+  { name: 'Mestre da Teia', effect: '+8000/Sec', cost: 600000, type: 'auto', value: 8000 },
+  { name: 'Teia Sombria', effect: '+10000/Click', cost: 700000, type: 'click', value: 10000 },
+  { name: 'Aranha Sobrevivente', effect: '+15000/Click', cost: 800000, type: 'click', value: 15000 },
+  { name: 'Soberana da Seda', effect: '+5000/Sec', cost: 900000, type: 'auto', value: 5000 },
+  { name: 'Aranha das Sombras', effect: '+25000/Click', cost: 1000000, type: 'click', value: 25000 },
+  { name: 'Enxame de Aranhas', effect: '+20000/Sec', cost: 1100000, type: 'auto', value: 20000 },
+  { name: 'Aranha Suprema', effect: '+50000/Click', cost: 1200000, type: 'click', value: 50000 },
+  { name: 'Império da Seda Supremo', effect: '+100000/Sec', cost: 1300000, type: 'auto', value: 100000 },
+  { name: 'Mega Colônia', effect: '+50000/Sec', cost: 1400000, type: 'auto', value: 50000 },
+  { name: 'Teia Infinita', effect: '+100000/Click', cost: 1500000, type: 'click', value: 100000 },
+  { name: 'Aranha Eterna', effect: '+200000/Click', cost: 1600000, type: 'click', value: 200000 },
+  { name: 'Teia Sem Fim', effect: '+50000/Sec', cost: 1700000, type: 'auto', value: 50000 },
+  { name: 'Aranha Cósmica', effect: '+1000000/Click', cost: 1800000, type: 'click', value: 1000000 },
+  { name: 'Teia Suprema', effect: '+200000/Sec', cost: 1900000, type: 'auto', value: 200000 },
+  { name: 'Aranha da Infinitude', effect: '+5000000/Click', cost: 2000000, type: 'click', value: 5000000 }
+];
+
+
+    function loadGame() {
+      const savedGame = JSON.parse(localStorage.getItem('spiderClickerGame'));
+      if (savedGame) {
+        currency = savedGame.currency;
+        bonus = savedGame.bonus;
+        autoClickers = savedGame.autoClickers;
+        clickMultiplier = savedGame.clickMultiplier;
+        updateDisplays();
+      }
+    }
+
+    function saveGame() {
+      const gameState = {
+        currency,
+        bonus,
+        autoClickers,
+        clickMultiplier
+      };
+      localStorage.setItem('spiderClickerGame', JSON.stringify(gameState));
+    }
+
+    function updateDisplays() {
+      document.getElementById('currencyDisplay').textContent = `$${currency}`;
+      document.getElementById('bonusDisplay').textContent = `x${clickMultiplier} Bonus`;
+      document.getElementById('autoClickerDisplay').textContent = `${autoClickers} AutoClicker`;
+    }
+
+    function increaseCurrency() {
+      currency += clickMultiplier;
+      updateDisplays();
+      saveGame();
+    }
+
+    function buyItem(item) {
+      if (currency >= item.cost) {
+        currency -= item.cost;
+        if (item.type === 'click') {
+          clickMultiplier += item.value;
+        } else if (item.type === 'auto') {
+          autoClickers += item.value;
+        }
+        updateDisplays();
+        saveGame();
+      }
+    }
+
+    function generateShopItems() {
+      const shopContainer = document.getElementById('shopItems');
+      items.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'item';
+        itemElement.innerHTML = `
+          <div class="text-right">
+            <div>${item.name}</div>
+            <div>${item.effect}</div>
+            <div>$${item.cost}</div>
+          </div>
+        `;
+        itemElement.addEventListener('click', () => buyItem(item));
+        shopContainer.appendChild(itemElement);
+      });
+    }
+
+    function openModal() {
+      document.getElementById('settingsModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    function resetProgress() {
+      localStorage.clear();
+      alert('Progresso apagado!');
+      location.reload();
+    }
+
+    function goToMenu() {
+      closeModal();
+      window.location.href = 'menu.html'; // Atualize o link conforme necessário
+    }
+
+    document.querySelector('.top-left-buttons .button').addEventListener('click', openModal);
+
+    setInterval(() => {
+      currency += autoClickers;
+      updateDisplays();
+      saveGame();
+    }, 1000);
+
+    window.onload = () => {
+      loadGame();
+      generateShopItems();
+    };
+  </script>
+</body>
+</html>
