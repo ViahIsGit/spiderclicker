@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dicas para Jogadores - Spider Clicker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Comic Neue', cursive;
+      margin: 0;
+      padding: 0;
+      cursor: none;
+      background-color: #1a1a1a;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      text-align: center;
+    }
+    .container {
+      width: 80%;
+      max-width: 800px;
+      background-color: #222;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+      overflow-y: auto;
+      max-height: 95vh; /* Definindo altura máxima para não ultrapassar a tela */
+    }
+
+ /* Barra de rolagem personalizada */
+ .container::-webkit-scrollbar {
+      width: 8px; /* Largura da barra de rolagem */
+    }
+    .container::-webkit-scrollbar-thumb {
+      background-color: #888; /* Cor da "bolinha" da barra de rolagem */
+      border-radius: 4px;
+      transition: background-color 0.3s ease; /* Efeito suave na cor */
+    }
+    .container::-webkit-scrollbar-thumb:hover {
+      background-color: #555; /* Cor da bolinha ao passar o mouse */
+    }
+    .container::-webkit-scrollbar-track {
+      background-color: #333; /* Cor de fundo da barra de rolagem */
+      border-radius: 4px;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+    h2 {
+      font-size: 24px;
+      margin-bottom: 15px;
+    }
+    p {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .tip {
+      background-color: #333;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+    }
+    .tip span {
+      font-weight: bold;
+    }
+    .back-button {
+      margin-top: 20px;
+      background-color: #555;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: none;
+      font-size: 18px;
+    }
+    .back-button:hover {
+      background-color: #777;
+    }
+
+    .cursor {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: url('imgs/silly.png') no-repeat center;
+      background-size: contain;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+  <div class="cursor" id="cursor"></div>
+  <div class="container">
+    <h1>Dicas para Jogadores de Spider Clicker</h1>
+
+    <div class="tip">
+      <h2>1. Invista em Auto-Clickers</h2>
+      <p>Use os auto-clickers para gerar moedas automaticamente ao longo do tempo. Quanto mais auto-clickers você tiver, mais moedas você receberá sem precisar clicar.</p>
+    </div>
+
+    <div class="tip">
+      <h2>2. Compre itens para melhorar seus cliques</h2>
+      <p>Itens como as aranhas micro e aranhas grandes aumentam o valor das moedas por clique. Compre esses itens o mais rápido possível para acelerar sua progressão.</p>
+    </div>
+
+    <div class="tip">
+      <h2>3. Desbloqueie Aranhas Poderosas</h2>
+      <p>Conforme avança no jogo, você pode desbloquear aranhas poderosas que aumentam significativamente suas moedas por clique. Algumas aranhas são mais caras, mas extremamente valiosas!</p>
+    </div>
+
+    <div class="tip">
+      <h2>4. Progresso gradual é a chave</h2>
+      <p>Não se desespere com os custos dos upgrades. Com o tempo, você acumulará moedas mais rapidamente e poderá comprar os melhores upgrades, acelerando seu progresso!</p>
+    </div>
+
+    <div class="tip">
+      <h2>5. Aumente o bônus dos cliques</h2>
+      <p>Alguns upgrades oferecem bônus de multiplicação nos cliques. Esses bônus podem aumentar exponencialmente suas moedas por clique, tornando sua progressão muito mais rápida.</p>
+    </div>
+
+    <div class="tip">
+      <h2>6. Mantenha-se motivado com os desafios</h2>
+      <p>O jogo tem uma progressão balanceada, mas você pode se motivar ao completar desafios diários ou tentar alcançar novos marcos, como desbloquear as aranhas mais poderosas.</p>
+    </div>
+
+    <button class="back-button" onclick="window.history.back()">Voltar ao Jogo</button>
+  </div>
+
+</body>
+<script>
+  const cursor = document.getElementById('cursor');
+  document.addEventListener('mousemove', (e) => {
+    cursor.style.left = `${e.pageX}px`;
+    cursor.style.top = `${e.pageY}px`;
+  });
+</script>
+</html>
