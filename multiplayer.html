@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spider Clicker - Multiplayer</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Happy+Monkey&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     /* Estilos anteriores... */
     body {
@@ -219,6 +222,115 @@
       background-color: rgba(0, 0, 0, 0.5);
       z-index: 9999;
     }
+
+    .voice-controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px;
+      border-radius: 10px;
+      z-index: 1000;
+    }
+
+    .voice-button {
+      background: #444;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    .voice-button:hover {
+      background: #555;
+    }
+
+    .voice-button.muted {
+      background: #f44336;
+    }
+
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .volume-slider {
+      width: 100px;
+      height: 4px;
+      -webkit-appearance: none;
+      background: #444;
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: white;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      border-radius: 5px;
+      color: white;
+      z-index: 1000;
+      animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+    }
+
+    .notification.success {
+      background: #4caf50;
+    }
+
+    .notification.error {
+      background: #f44336;
+    }
+
+    .notification.info {
+      background: #2196f3;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-20px); }
+    }
+
+    @media (max-width: 768px) {
+      .right-panel {
+        position: fixed;
+        bottom: 80px;
+        left: 0;
+        right: 0;
+        top: auto;
+        width: 100%;
+        max-height: 30vh;
+        border-radius: 16px 16px 0 0;
+        z-index: 100;
+      }
+
+      .voice-controls {
+        bottom: 70px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -272,6 +384,19 @@
     </div>
   </div>
 
+  <div class="voice-controls">
+    <button class="voice-button" id="muteButton" onclick="toggleMute()">
+      <i class="material-icons">mic</i>
+    </button>
+    <button class="voice-button" id="deafenButton" onclick="toggleDeafen()">
+      <i class="material-icons">headset</i>
+    </button>
+    <div class="volume-control">
+      <i class="material-icons">volume_up</i>
+      <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="100">
+    </div>
+  </div>
+
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script>
@@ -295,6 +420,15 @@
     let clickMultiplier = 1;
     let roomName = '';
     let playerName = '';
+    
+    // Variáveis de estado para o chat de voz
+    let localStream = null;
+    let isMuted = false;
+    let isDeafened = false;
+    let peerConnections = {};
+    let audioContext = null;
+    let volumeNode = null;
+    let currentUser = null;
 
     // Função para abrir a modal do chat
     function openChatModal() {
@@ -399,64 +533,409 @@
       }
     }
 
-    function joinRoom(roomName) {
-      playerName = prompt("Digite seu nome:");
-      if (playerName) {
-        const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
-        playerRef.set({
-          name: playerName,
-          currency: currency,
-          clickMultiplier: clickMultiplier
+    function updateVoiceButtonStates() {
+        const muteButton = document.getElementById('muteButton');
+        const deafenButton = document.getElementById('deafenButton');
+        const micIcon = muteButton.querySelector('i');
+        const headsetIcon = deafenButton.querySelector('i');
+
+        if (isMuted) {
+            muteButton.classList.add('muted');
+            micIcon.textContent = 'mic_off';
+        } else {
+            muteButton.classList.remove('muted');
+            micIcon.textContent = 'mic';
+        }
+
+        if (isDeafened) {
+            deafenButton.classList.add('muted');
+            headsetIcon.textContent = 'headset_off';
+        } else {
+            deafenButton.classList.remove('muted');
+            headsetIcon.textContent = 'headset';
+        }
+    }
+
+    function toggleMute() {
+        if (!localStream) return;
+        
+        isMuted = !isMuted;
+        localStream.getAudioTracks().forEach(track => {
+            track.enabled = !isMuted;
         });
+        
+        updateVoiceButtonStates();
+        showNotification(isMuted ? 'Microfone desativado' : 'Microfone ativado', 'info');
+        
+        // Atualizar status no Firebase
+        if (roomName && playerName) {
+            const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
+            playerRef.update({ isMuted });
+        }
+    }
 
-        playerRef.onDisconnect().remove();
-
-        const roomRef = database.ref(`multiplayer/rooms/${roomName}/players`);
-        roomRef.on('value', (snapshot) => {
-          const players = snapshot.val();
-          updatePlayersUI(players);
+    function toggleDeafen() {
+        isDeafened = !isDeafened;
+        
+        Object.values(peerConnections).forEach(pc => {
+            const audioElement = document.querySelector(`[data-peer-id="${pc.peerId}"]`);
+            if (audioElement) {
+                audioElement.muted = isDeafened;
+            }
         });
+        
+        updateVoiceButtonStates();
+        showNotification(isDeafened ? 'Áudio desativado' : 'Áudio ativado', 'info');
+        
+        // Atualizar status no Firebase
+        if (roomName && playerName) {
+            const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
+            playerRef.update({ isDeafened });
+        }
+    }
 
-        // Mostrar o botão "Sair da Sala"
-        document.getElementById('leaveRoomButton').style.display = 'block';
+    // Adicionar controle de volume
+    document.getElementById('volumeSlider').addEventListener('input', (e) => {
+        const volume = e.target.value / 100;
+        Object.values(peerConnections).forEach(pc => {
+            const audioElement = document.querySelector(`[data-peer-id="${pc.peerId}"]`);
+            if (audioElement) {
+                audioElement.volume = volume;
+            }
+        });
+    });
 
-        // Iniciar o chat
-        listenToChat();
+    // Atualizar a função initVoiceChat para incluir os novos estados
+    async function initVoiceChat() {
+        try {
+            // Inicializar contexto de áudio primeiro
+            if (!await initAudioContext()) {
+                throw new Error('Falha ao inicializar contexto de áudio');
+            }
+
+            // Obter stream de áudio
+            localStream = await navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
+            
+            // Configurar stream de áudio
+            await setupAudioStream(localStream);
+            
+            // Verificar se o usuário já estava mudo
+            if (isMuted) {
+                localStream.getAudioTracks().forEach(track => {
+                    track.enabled = false;
+                });
+            }
+            
+            updateVoiceButtonStates();
+            showNotification('Chat de voz iniciado com sucesso!', 'success');
+            
+            // Atualizar status inicial no Firebase
+            if (roomName && playerName) {
+                const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
+                playerRef.update({ 
+                    isMuted, 
+                    isDeafened,
+                    hasAudio: true
+                });
+            }
+            
+            // Configurar listeners para mudanças de estado de áudio
+            setupVoiceChatListeners();
+            
+        } catch (error) {
+            console.error('Erro ao iniciar o chat de voz:', error);
+            showNotification('Erro ao acessar o microfone. Verifique as permissões.', 'error');
+            
+            if (roomName && playerName) {
+                const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
+                playerRef.update({ hasAudio: false });
+            }
+        }
+    }
+
+    async function createPeerConnection(remotePlayerName) {
+      if (peerConnections[remotePlayerName]) return;
+
+      const pc = new RTCPeerConnection({
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+      });
+
+      pc.peerId = remotePlayerName;
+      peerConnections[remotePlayerName] = pc;
+
+      // Adicionar tracks locais
+      if (localStream) {
+        localStream.getTracks().forEach(track => {
+          pc.addTrack(track, localStream);
+        });
+      }
+
+      // Configurar áudio remoto
+      const audioElem = document.createElement('audio');
+      audioElem.autoplay = true;
+      audioElem.dataset.peerId = remotePlayerName;
+      
+      // Aplicar volume atual
+      const volumeSlider = document.getElementById('volumeSlider');
+      audioElem.volume = volumeSlider.value / 100;
+      
+      // Aplicar estado de "deafened"
+      audioElem.muted = isDeafened;
+      
+      document.body.appendChild(audioElem);
+
+      pc.ontrack = (event) => {
+        audioElem.srcObject = event.streams[0];
+        
+        // Criar nó de ganho para este peer
+        if (audioContext) {
+          const source = audioContext.createMediaStreamSource(event.streams[0]);
+          const gainNode = audioContext.createGain();
+          gainNode.gain.value = volumeSlider.value / 100;
+          source.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          pc.gainNode = gainNode;
+        }
+      };
+
+      // Configurar ICE candidates
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          database.ref(`multiplayer/rooms/${roomName}/candidates/${playerName}_${remotePlayerName}`).push({
+            candidate: event.candidate.toJSON(),
+            type: 'sender'
+          });
+        }
+      };
+
+      // Monitorar estado da conexão
+      pc.onconnectionstatechange = () => {
+        if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+          closePeerConnection(remotePlayerName);
+        }
+      };
+
+      return pc;
+    }
+
+    // Função para fechar conexão peer
+    function closePeerConnection(remotePlayerName) {
+      const pc = peerConnections[remotePlayerName];
+      if (pc) {
+        // Limpar nó de ganho
+        if (pc.gainNode) {
+          pc.gainNode.disconnect();
+        }
+        
+        // Remover elemento de áudio
+        const audioElem = document.querySelector(`[data-peer-id="${remotePlayerName}"]`);
+        if (audioElem) {
+          audioElem.remove();
+        }
+        
+        // Fechar conexão
+        pc.close();
+        delete peerConnections[remotePlayerName];
       }
     }
 
-    // Função para sair da sala
-    function leaveRoom() {
-      const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
-      playerRef.remove().then(() => {
-        alert("Você saiu da sala.");
-        location.reload();
-      });
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => notification.remove(), 3000);
     }
 
-    // Função para atualizar a interface dos jogadores
     function updatePlayersUI(players) {
       const currentPlayerInfo = document.getElementById('currentPlayerInfo');
       const otherPlayersInfo = document.getElementById('otherPlayersInfo');
-
-      // Limpa o conteúdo anterior
+      
       currentPlayerInfo.innerHTML = '';
       otherPlayersInfo.innerHTML = '';
-
+      
       for (const playerKey in players) {
         const player = players[playerKey];
         const playerElement = document.createElement('div');
-        playerElement.className = 'item';
-        playerElement.textContent = `${player.name}: ${player.currency} Teias (x${player.clickMultiplier})`;
-
+        playerElement.className = 'player-item';
+        
+        const avatar = document.createElement('div');
+        avatar.className = 'player-avatar';
+        avatar.textContent = player.name[0].toUpperCase();
+        
+        const info = document.createElement('div');
+        info.className = 'player-info';
+        info.innerHTML = `
+          <div>${player.name}</div>
+          <div>${player.currency} Teias (x${player.clickMultiplier})</div>
+        `;
+        
+        const controls = document.createElement('div');
+        controls.className = 'player-controls';
+        
+        if (player.isMuted) {
+          const mutedIcon = document.createElement('i');
+          mutedIcon.className = 'material-icons';
+          mutedIcon.textContent = 'mic_off';
+          controls.appendChild(mutedIcon);
+        }
+        
+        playerElement.appendChild(avatar);
+        playerElement.appendChild(info);
+        playerElement.appendChild(controls);
+        
         if (playerKey === playerName) {
-          // Exibe os dados do jogador atual
           currentPlayerInfo.appendChild(playerElement);
         } else {
-          // Exibe os dados dos outros jogadores
           otherPlayersInfo.appendChild(playerElement);
         }
       }
+    }
+
+    // Função para gerenciar novos jogadores
+    async function handleNewPlayer(remotePlayerName) {
+      if (remotePlayerName === playerName) return; // Ignorar o próprio jogador
+      
+      try {
+        // Criar conexão WebRTC
+        const pc = await createPeerConnection(remotePlayerName);
+        if (!pc) return;
+        
+        // Criar e enviar oferta
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        
+        // Enviar oferta para o Firebase
+        await database.ref(`multiplayer/rooms/${roomName}/offers/${playerName}_${remotePlayerName}`).set({
+          type: offer.type,
+          sdp: offer.sdp
+        });
+        
+        console.log(`Oferta enviada para ${remotePlayerName}`);
+        
+      } catch (error) {
+        console.error(`Erro ao conectar com ${remotePlayerName}:`, error);
+        showNotification(`Erro ao conectar com ${remotePlayerName}`, 'error');
+      }
+    }
+
+    function joinRoom(roomName) {
+      playerName = prompt("Digite seu nome:");
+      if (playerName) {
+        initVoiceChat().then(() => {
+          const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
+          playerRef.set({
+            name: playerName,
+            currency: currency,
+            clickMultiplier: clickMultiplier,
+            isMuted: false
+          });
+
+          playerRef.onDisconnect().remove();
+
+          const roomRef = database.ref(`multiplayer/rooms/${roomName}/players`);
+          roomRef.on('value', (snapshot) => {
+            const players = snapshot.val();
+            updatePlayersUI(players);
+            
+            // Configurar conexões WebRTC com novos jogadores
+            if (players) {
+              Object.keys(players).forEach(playerKey => {
+                if (playerKey !== playerName) {
+                  handleNewPlayer(playerKey);
+                }
+              });
+            }
+          });
+
+          // Mostrar o botão "Sair da Sala"
+          document.getElementById('leaveRoomButton').style.display = 'block';
+
+          // Iniciar o chat
+          listenToChat();
+          
+          // Escutar ofertas WebRTC
+          database.ref(`multiplayer/rooms/${roomName}/offers`).on('child_added', async (snapshot) => {
+            const [sender, receiver] = snapshot.key.split('_');
+            if (receiver === playerName) {
+              const pc = await createPeerConnection(sender);
+              const offer = snapshot.val();
+              await pc.setRemoteDescription(new RTCSessionDescription(offer));
+              const answer = await pc.createAnswer();
+              await pc.setLocalDescription(answer);
+              
+              database.ref(`multiplayer/rooms/${roomName}/answers/${receiver}_${sender}`).set({
+                sdp: answer.sdp,
+                type: answer.type
+              });
+            }
+          });
+          
+          // Escutar respostas WebRTC
+          database.ref(`multiplayer/rooms/${roomName}/answers`).on('child_added', async (snapshot) => {
+            const [sender, receiver] = snapshot.key.split('_');
+            if (receiver === playerName) {
+              const pc = peerConnections[sender];
+              if (pc) {
+                const answer = snapshot.val();
+                await pc.setRemoteDescription(new RTCSessionDescription(answer));
+              }
+            }
+          });
+          
+          // Escutar ICE candidates
+          database.ref(`multiplayer/rooms/${roomName}/candidates`).on('child_added', async (snapshot) => {
+            const [sender, receiver] = snapshot.key.split('_');
+            if (receiver === playerName) {
+              const pc = peerConnections[sender];
+              if (pc) {
+                const candidates = snapshot.val();
+                for (const key in candidates) {
+                  const candidate = candidates[key];
+                  await pc.addIceCandidate(new RTCIceCandidate(candidate.candidate));
+                }
+              }
+            }
+          });
+        });
+      }
+    }
+
+    function leaveRoom() {
+      // Limpar conexões WebRTC
+      Object.keys(peerConnections).forEach(closePeerConnection);
+      
+      // Parar stream local
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+      }
+      
+      // Limpar contexto de áudio
+      if (volumeNode) {
+        volumeNode.disconnect();
+        volumeNode = null;
+      }
+      if (audioContext) {
+        audioContext.close();
+        audioContext = null;
+      }
+      
+      // Remover referência do jogador
+      const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
+      playerRef.remove().then(() => {
+        showNotification('Você saiu da sala', 'info');
+        location.reload();
+      });
     }
 
     // Função para aumentar a moeda
@@ -488,6 +967,131 @@
     window.onload = () => {
       showRoomChoiceAlert();
     };
+
+    // Configuração do Firebase para o chat de voz
+    function setupVoiceChatListeners() {
+        if (!currentUser || !roomName) return;
+
+        const roomRef = firebase.database().ref(`rooms/${roomName}/users`);
+        
+        // Ouvir mudanças nos estados de áudio dos usuários
+        roomRef.on('child_changed', (snapshot) => {
+            const userData = snapshot.val();
+            const userId = snapshot.key;
+            
+            if (userId !== currentUser.uid) {
+                updateRemoteUserAudioState(userId, userData);
+            }
+        });
+        
+        // Ouvir entrada de novos usuários
+        roomRef.on('child_added', (snapshot) => {
+            const userData = snapshot.val();
+            const userId = snapshot.key;
+            
+            if (userId !== currentUser.uid) {
+                setupPeerConnection(userId);
+                updateRemoteUserAudioState(userId, userData);
+            }
+        });
+        
+        // Ouvir saída de usuários
+        roomRef.on('child_removed', (snapshot) => {
+            const userId = snapshot.key;
+            if (peerConnections[userId]) {
+                closePeerConnection(userId);
+            }
+        });
+    }
+
+    function updateRemoteUserAudioState(userId, userData) {
+        const audioElement = document.querySelector(`[data-peer-id="${userId}"]`);
+        if (audioElement) {
+            // Atualizar o estado do áudio remoto baseado nas configurações do usuário
+            audioElement.muted = isDeafened || userData.isMuted;
+        }
+        
+        // Atualizar indicadores visuais
+        updateRemoteUserIndicators(userId, userData);
+    }
+
+    function updateRemoteUserIndicators(userId, userData) {
+        const userElement = document.querySelector(`[data-user-id="${userId}"]`);
+        if (userElement) {
+            const micIcon = userElement.querySelector('.mic-indicator');
+            const headsetIcon = userElement.querySelector('.headset-indicator');
+            
+            if (micIcon) {
+                micIcon.textContent = userData.isMuted ? 'mic_off' : 'mic';
+                micIcon.classList.toggle('muted', userData.isMuted);
+            }
+            
+            if (headsetIcon) {
+                headsetIcon.textContent = userData.isDeafened ? 'headset_off' : 'headset';
+                headsetIcon.classList.toggle('muted', userData.isDeafened);
+            }
+        }
+    }
+
+    // Função para limpar as conexões ao sair da sala
+    function cleanupVoiceChat() {
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            localStream = null;
+        }
+        
+        Object.keys(peerConnections).forEach(closePeerConnection);
+        peerConnections = {};
+        
+        if (currentUser && roomName) {
+            const userRef = firebase.database().ref(`rooms/${roomName}/users/${currentUser.uid}`);
+            userRef.remove();
+        }
+    }
+
+    // Função para inicializar o contexto de áudio
+    async function initAudioContext() {
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        volumeNode = audioContext.createGain();
+        volumeNode.connect(audioContext.destination);
+        return true;
+      } catch (error) {
+        console.error('Erro ao inicializar contexto de áudio:', error);
+        showNotification('Erro ao inicializar áudio', 'error');
+        return false;
+      }
+    }
+
+    // Função para configurar stream de áudio
+    async function setupAudioStream(stream) {
+      if (!audioContext) {
+        if (!await initAudioContext()) return;
+      }
+      
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(volumeNode);
+    }
+
+    // Função para atualizar volume
+    function updateVolume(value) {
+      if (volumeNode) {
+        volumeNode.gain.value = value / 100;
+      }
+      
+      // Atualizar volume dos peers
+      Object.values(peerConnections).forEach(pc => {
+        const audioElement = document.querySelector(`[data-peer-id="${pc.peerId}"]`);
+        if (audioElement) {
+          audioElement.volume = value / 100;
+        }
+      });
+    }
+
+    // Atualizar listener do volume
+    document.getElementById('volumeSlider').addEventListener('input', (e) => {
+      updateVolume(e.target.value);
+    });
   </script>
 </body>
 </html>
