@@ -88,9 +88,7 @@
 <ul>
                 <li><a href="game.html">CONTINUAR</a></li>
                 <li><a href="#" onclick="clearLocalStorage()">NOVO JOGO</a></li>
-                <li><a href="multiplayer.html">MULTIPLAYER</a></li>
-                <li><a href="crd.html">CRÉDITOS</a></li>
-                <li><a href="log.html">LOGS DE ATUALIZAÇÃO</a></li>            </ul>
+                <li><a href="multiplayer.html">MULTIPLAYER</a></li>         </ul>
         </div>
     </div>
 
@@ -105,7 +103,7 @@
             if (confirm('Tem certeza que deseja iniciar um novo jogo? Todos os dados serão apagados!')) {
                 localStorage.clear();
                 alert('Dados limpos. Iniciando novo jogo!');
-                window.location.href = 'game.html';  // Redireciona para a página "novo_jogo.html"
+                window.location.href = 'game.html';
             }
         }
     </script>

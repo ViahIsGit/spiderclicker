@@ -11,12 +11,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Happy+Monkey&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
-    /* Estilos anteriores... */
+  *{
+    font-family: "Happy Monkey", cursive;
+  }
     body {
         font-family: "Happy Monkey", cursive;
         margin: 0;
         padding: 0;
-        cursor: none;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -37,7 +38,6 @@
         height: 100%;
         display: flex;
         user-select: none;
-        cursor: none;
         flex-direction: column;
         align-items: center;
         justify-content: center;
@@ -53,7 +53,6 @@
         align-items: center;
         justify-content: center;
         color: #fff;
-        cursor: none;
       }
       .right-panel {
         position: absolute;
@@ -65,7 +64,6 @@
         border-radius: 8px;
         padding: 8px;
         overflow-y: auto;
-        max-height: 95vh;
       }
       .right-panel::-webkit-scrollbar {
         width: 8px;
@@ -119,16 +117,6 @@
         width: 128px;
         height: 128px;
       }
-      .cursor {
-        position: absolute;
-        width: 40px;
-        height: 40px;
-        background: url('imgs/silly.png') no-repeat center;
-        background-size: contain;
-        pointer-events: none;
-        transform: translate(-50%, -50%);
-        z-index: 9999;
-      }
       .player-info {
         margin-bottom: 16px;
       }
@@ -144,73 +132,89 @@
         display: flex;
         gap: 8px;
       }
+      /* Modal base */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #1e1e1e;
+  border: none;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+}
 
-    /* Estilos para a modal */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 300px;
-      background-color: #222;
-      border: 2px solid #555;
-      border-radius: 8px;
-      padding: 16px;
-      z-index: 10000;
-    }
+/* Cabeçalho */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background-color: #2c2c2c;
+  border-bottom: 1px solid #444;
+}
 
-    .modal-content {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+.modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #f1f1f1;
+}
 
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+.modal-header .close {
+  cursor: pointer;
+  font-size: 28px;
+  color: #fff;
+}
 
-    .modal-header h2 {
-      margin: 0;
-      font-size: 18px;
-      color: #4d4d4d;
-    }
+/* Conteúdo do chat */
+.modal-body {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background-color: #1e1e1e;
+  color: #eee;
+  font-size: 14px;
+}
 
-    .modal-header .close {
-      cursor: pointer;
-      font-size: 24px;
-      color: #fff;
-    }
+.modal-footer {
+  display: flex;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px;
+  background-color: #2c2c2c;
+  border-top: 1px solid #444;
+}
 
-    .modal-body {
-      max-height: 200px;
-      overflow-y: auto;
-    }
+.modal-footer input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background-color: #333;
+  color: #fff;
+  margin-right: 8px;
+}
 
-    .modal-footer {
-      display: flex;
-      gap: 8px;
-    }
+.modal-footer button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #4a90e2;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
-    .modal-footer input {
-      flex: 1;
-      padding: 8px;
-      border: 2px solid #555;
-      border-radius: 8px;
-      background-color: #333;
-      color: #fff;
-    }
+.modal-footer button:hover {
+  background-color: #357abd;
+}
 
-    .modal-footer button {
-      padding: 8px;
-      border: 2px solid #555;
-      border-radius: 8px;
-      background-color: #333;
-      color: #fff;
-      cursor: pointer;
-    }
 
     .overlay {
       display: none;
@@ -331,10 +335,34 @@
         bottom: 70px;
       }
     }
+    
+@media (max-width: 768px) {
+  .right-panel {
+    display: none;              /* escondido por padrão */
+    position: fixed;
+    top: 0;
+    left: 0;                    /* ocupa a tela toda */
+    width: 100vw;
+    height: 100vh;
+    background: #1e1e1e;
+    box-shadow: none;
+    border: none;
+    overflow-y: auto;
+    z-index: 10000;
+    border-radius: 0;
+  }
+
+  .right-panel.open {
+    display: block;             /* aparece como modal fullscreen */
+  }
+
+  .overlay {
+    display: none;              /* opcional no fullscreen */
+  }
+}
   </style>
 </head>
 <body>
-  <div class="cursor" id="cursor"></div>
   <div class="container">
     <div class="top-left-buttons">
       <button class="button" id="leaveRoomButton" style="display: none;" onclick="leaveRoom()">
@@ -342,6 +370,9 @@
       </button>
       <button class="button" id="chatButton" onclick="openChatModal()">
         <i class="fas fa-comments"></i>
+      </button>
+       <button class="button" id="toggle-panel">
+        <i class="fas fa-bars"></i>
       </button>
     </div>
     <div class="right-panel">
@@ -399,699 +430,455 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-  <script>
-    // Configuração do Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyC9QD1Q3OIATfubbyGgZD4i912UcVQWhi8",
-      authDomain: "spiderclicker0.firebaseapp.com",
-      projectId: "spiderclicker0",
-      databaseURL: "https://spiderclicker0-default-rtdb.firebaseio.com/",
-      storageBucket: "spiderclicker0.firebasestorage.app",
-      messagingSenderId: "588870497380",
-      appId: "1:588870497380:web:7a4ada0dcc8ebc0b819b71",
-      measurementId: "G-RN8T5693ZP"
-    };
+<script>
+  // Configuração do Firebase
+  const firebaseConfig = {
+  apiKey: "AIzaSyCei0u5MbmiSUYeMM52DVKIiPIheq1IMLo",
+  authDomain: "spiderclicker06.firebaseapp.com",
+  projectId: "spiderclicker06",
+  storageBucket: "spiderclicker06.firebasestorage.app",
+  messagingSenderId: "81956560892",
+  appId: "1:81956560892:web:169cbdb87a13626c975c79",
+  measurementId: "G-P3CG6Z9CC0"
+};
 
-    // Inicialize o Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+  // Inicialize o Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+  closeChatModal();
 
-    let currency = 0;
-    let clickMultiplier = 1;
-    let roomName = '';
-    let playerName = '';
-    
-    // Variáveis de estado para o chat de voz
-    let localStream = null;
-    let isMuted = false;
-    let isDeafened = false;
-    let peerConnections = {};
-    let audioContext = null;
-    let volumeNode = null;
-    let currentUser = null;
+  let currency = 0;
+  let clickMultiplier = 1;
+  let roomName = '';
+  let playerName = '';
+  
+  // Estado do chat de voz
+  let localStream = null;
+  let isMuted = false;
+  let isDeafened = false;
+  let peerConnections = {};
+  let audioContext = null;
+  let volumeNode = null;
 
-    // Função para abrir a modal do chat
-    function openChatModal() {
-      document.getElementById('chatModal').style.display = 'block';
-      document.getElementById('chatOverlay').style.display = 'block';
-    }
+  // -----------------------------
+  // Chat de Texto
+  // -----------------------------
 
-    // Função para fechar a modal do chat
-    function closeChatModal() {
-      document.getElementById('chatModal').style.display = 'none';
-      document.getElementById('chatOverlay').style.display = 'none';
-    }
+  function openChatModal() {
+    document.getElementById('chatModal').style.display = 'block';
+    document.getElementById('chatOverlay').style.display = 'block';
+  }
 
-    // Função para enviar mensagem no chat
-    function sendMessage() {
-      const message = document.getElementById('chatInput').value;
-      if (message.trim() !== '') {
-        const chatRef = database.ref(`multiplayer/rooms/${roomName}/chat`);
-        chatRef.push({
-          sender: playerName,
-          message: message,
-          timestamp: firebase.database.ServerValue.TIMESTAMP
-        });
-        document.getElementById('chatInput').value = '';
-      }
-    }
+  function closeChatModal() {
+    document.getElementById('chatModal').style.display = 'none';
+    document.getElementById('chatOverlay').style.display = 'none';
+  }
 
-    // Função para exibir as mensagens do chat
-    function displayChatMessages(messages) {
-      const chatMessages = document.getElementById('chatMessages');
-      chatMessages.innerHTML = '';
-      messages.forEach(message => {
-        const messageElement = document.createElement('div');
-        messageElement.textContent = `${message.sender}: ${message.message}`;
-        chatMessages.appendChild(messageElement);
-      });
-    }
-
-    // Ouvinte para as mensagens do chat
-    function listenToChat() {
+  function sendMessage() {
+    const message = document.getElementById('chatInput').value;
+    if (message.trim() !== '') {
       const chatRef = database.ref(`multiplayer/rooms/${roomName}/chat`);
-      chatRef.on('value', (snapshot) => {
-        const messages = [];
-        snapshot.forEach(childSnapshot => {
-          messages.push(childSnapshot.val());
-        });
-        displayChatMessages(messages);
+      chatRef.push({
+        sender: playerName,
+        message: message,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
       });
+      document.getElementById('chatInput').value = '';
     }
+  }
 
-    // Função para exibir o alerta de escolha ao carregar a página
-    function showRoomChoiceAlert() {
-      const choice = confirm("Deseja criar uma nova sala ou entrar em uma sala existente?\n\nClique em 'OK' para criar uma sala ou em 'Cancelar' para entrar em uma sala.");
-      if (choice) {
-        createRoom();
-      } else {
-        joinRoomPrompt();
-      }
-    }
-
-    // Função para verificar se a sala já existe
-    function checkRoomExists(roomName) {
-      const roomRef = database.ref(`multiplayer/rooms/${roomName}`);
-      return roomRef.once('value').then(snapshot => {
-        return snapshot.exists();
-      });
-    }
-
-    // Função para criar uma sala
-    function createRoom() {
-      roomName = prompt("Digite o nome da sala:");
-      if (roomName) {
-        checkRoomExists(roomName).then(exists => {
-          if (exists) {
-            alert("Uma sala com esse nome já existe. Por favor, escolha outro nome.");
-            createRoom();
-          } else {
-            const roomRef = database.ref(`multiplayer/rooms/${roomName}`);
-            roomRef.set({
-              players: {},
-              chat: {}
-            }).then(() => {
-              joinRoom(roomName);
-            });
-          }
-        });
-      }
-    }
-
-    // Função para entrar em uma sala
-    function joinRoomPrompt() {
-      roomName = prompt("Digite o nome da sala:");
-      if (roomName) {
-        checkRoomExists(roomName).then(exists => {
-          if (exists) {
-            joinRoom(roomName);
-          } else {
-            alert("Sala não encontrada. Verifique o nome e tente novamente.");
-            joinRoomPrompt();
-          }
-        });
-      }
-    }
-
-    function updateVoiceButtonStates() {
-        const muteButton = document.getElementById('muteButton');
-        const deafenButton = document.getElementById('deafenButton');
-        const micIcon = muteButton.querySelector('i');
-        const headsetIcon = deafenButton.querySelector('i');
-
-        if (isMuted) {
-            muteButton.classList.add('muted');
-            micIcon.textContent = 'mic_off';
-        } else {
-            muteButton.classList.remove('muted');
-            micIcon.textContent = 'mic';
-        }
-
-        if (isDeafened) {
-            deafenButton.classList.add('muted');
-            headsetIcon.textContent = 'headset_off';
-        } else {
-            deafenButton.classList.remove('muted');
-            headsetIcon.textContent = 'headset';
-        }
-    }
-
-    function toggleMute() {
-        if (!localStream) return;
-        
-        isMuted = !isMuted;
-        localStream.getAudioTracks().forEach(track => {
-            track.enabled = !isMuted;
-        });
-        
-        updateVoiceButtonStates();
-        showNotification(isMuted ? 'Microfone desativado' : 'Microfone ativado', 'info');
-        
-        // Atualizar status no Firebase
-        if (roomName && playerName) {
-            const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
-            playerRef.update({ isMuted });
-        }
-    }
-
-    function toggleDeafen() {
-        isDeafened = !isDeafened;
-        
-        Object.values(peerConnections).forEach(pc => {
-            const audioElement = document.querySelector(`[data-peer-id="${pc.peerId}"]`);
-            if (audioElement) {
-                audioElement.muted = isDeafened;
-            }
-        });
-        
-        updateVoiceButtonStates();
-        showNotification(isDeafened ? 'Áudio desativado' : 'Áudio ativado', 'info');
-        
-        // Atualizar status no Firebase
-        if (roomName && playerName) {
-            const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
-            playerRef.update({ isDeafened });
-        }
-    }
-
-    // Adicionar controle de volume
-    document.getElementById('volumeSlider').addEventListener('input', (e) => {
-        const volume = e.target.value / 100;
-        Object.values(peerConnections).forEach(pc => {
-            const audioElement = document.querySelector(`[data-peer-id="${pc.peerId}"]`);
-            if (audioElement) {
-                audioElement.volume = volume;
-            }
-        });
+  function displayChatMessages(messages) {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.innerHTML = '';
+    messages.forEach(message => {
+      const messageElement = document.createElement('div');
+      messageElement.textContent = `${message.sender}: ${message.message}`;
+      chatMessages.appendChild(messageElement);
     });
+  }
 
-    // Atualizar a função initVoiceChat para incluir os novos estados
-    async function initVoiceChat() {
-        try {
-            // Inicializar contexto de áudio primeiro
-            if (!await initAudioContext()) {
-                throw new Error('Falha ao inicializar contexto de áudio');
-            }
-
-            // Obter stream de áudio
-            localStream = await navigator.mediaDevices.getUserMedia({ 
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true
-                }
-            });
-            
-            // Configurar stream de áudio
-            await setupAudioStream(localStream);
-            
-            // Verificar se o usuário já estava mudo
-            if (isMuted) {
-                localStream.getAudioTracks().forEach(track => {
-                    track.enabled = false;
-                });
-            }
-            
-            updateVoiceButtonStates();
-            showNotification('Chat de voz iniciado com sucesso!', 'success');
-            
-            // Atualizar status inicial no Firebase
-            if (roomName && playerName) {
-                const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
-                playerRef.update({ 
-                    isMuted, 
-                    isDeafened,
-                    hasAudio: true
-                });
-            }
-            
-            // Configurar listeners para mudanças de estado de áudio
-            setupVoiceChatListeners();
-            
-        } catch (error) {
-            console.error('Erro ao iniciar o chat de voz:', error);
-            showNotification('Erro ao acessar o microfone. Verifique as permissões.', 'error');
-            
-            if (roomName && playerName) {
-                const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
-                playerRef.update({ hasAudio: false });
-            }
-        }
-    }
-
-    async function createPeerConnection(remotePlayerName) {
-      if (peerConnections[remotePlayerName]) return;
-
-      const pc = new RTCPeerConnection({
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
-        ]
+  function listenToChat() {
+    const chatRef = database.ref(`multiplayer/rooms/${roomName}/chat`);
+    chatRef.on('value', (snapshot) => {
+      const messages = [];
+      snapshot.forEach(childSnapshot => {
+        messages.push(childSnapshot.val());
       });
+      displayChatMessages(messages);
+    });
+  }
 
-      pc.peerId = remotePlayerName;
-      peerConnections[remotePlayerName] = pc;
+  // -----------------------------
+  // Gerenciamento de Salas
+  // -----------------------------
 
-      // Adicionar tracks locais
-      if (localStream) {
-        localStream.getTracks().forEach(track => {
-          pc.addTrack(track, localStream);
-        });
-      }
+  function showRoomChoiceAlert() {
+    const choice = confirm("Deseja criar uma nova sala ou entrar em uma sala existente?\n\nClique em 'OK' para criar ou em 'Cancelar' para entrar.");
+    if (choice) {
+      createRoom();
+    } else {
+      joinRoomPrompt();
+    }
+  }
 
-      // Configurar áudio remoto
-      const audioElem = document.createElement('audio');
-      audioElem.autoplay = true;
-      audioElem.dataset.peerId = remotePlayerName;
-      
-      // Aplicar volume atual
-      const volumeSlider = document.getElementById('volumeSlider');
-      audioElem.volume = volumeSlider.value / 100;
-      
-      // Aplicar estado de "deafened"
-      audioElem.muted = isDeafened;
-      
-      document.body.appendChild(audioElem);
+  function checkRoomExists(roomName) {
+    const roomRef = database.ref(`multiplayer/rooms/${roomName}`);
+    return roomRef.once('value').then(snapshot => snapshot.exists());
+  }
 
-      pc.ontrack = (event) => {
-        audioElem.srcObject = event.streams[0];
-        
-        // Criar nó de ganho para este peer
-        if (audioContext) {
-          const source = audioContext.createMediaStreamSource(event.streams[0]);
-          const gainNode = audioContext.createGain();
-          gainNode.gain.value = volumeSlider.value / 100;
-          source.connect(gainNode);
-          gainNode.connect(audioContext.destination);
-          pc.gainNode = gainNode;
-        }
-      };
-
-      // Configurar ICE candidates
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          database.ref(`multiplayer/rooms/${roomName}/candidates/${playerName}_${remotePlayerName}`).push({
-            candidate: event.candidate.toJSON(),
-            type: 'sender'
+  function createRoom() {
+    roomName = prompt("Digite o nome da sala:");
+    if (roomName) {
+      checkRoomExists(roomName).then(exists => {
+        if (exists) {
+          alert("Essa sala já existe. Escolha outro nome.");
+          createRoom();
+        } else {
+          const roomRef = database.ref(`multiplayer/rooms/${roomName}`);
+          roomRef.set({ players: {}, chat: {} }).then(() => {
+            joinRoom(roomName);
           });
         }
-      };
-
-      // Monitorar estado da conexão
-      pc.onconnectionstatechange = () => {
-        if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
-          closePeerConnection(remotePlayerName);
-        }
-      };
-
-      return pc;
+      });
     }
+  }
 
-    // Função para fechar conexão peer
-    function closePeerConnection(remotePlayerName) {
-      const pc = peerConnections[remotePlayerName];
-      if (pc) {
-        // Limpar nó de ganho
-        if (pc.gainNode) {
-          pc.gainNode.disconnect();
+  function joinRoomPrompt() {
+    roomName = prompt("Digite o nome da sala:");
+    if (roomName) {
+      checkRoomExists(roomName).then(exists => {
+        if (exists) {
+          joinRoom(roomName);
+        } else {
+          alert("Sala não encontrada. Verifique o nome.");
+          joinRoomPrompt();
         }
-        
-        // Remover elemento de áudio
-        const audioElem = document.querySelector(`[data-peer-id="${remotePlayerName}"]`);
-        if (audioElem) {
-          audioElem.remove();
-        }
-        
-        // Fechar conexão
-        pc.close();
-        delete peerConnections[remotePlayerName];
+      });
+    }
+  }
+
+  // -----------------------------
+  // Chat de Voz - Controles
+  // -----------------------------
+
+  function updateVoiceButtonStates() {
+    const muteButton = document.getElementById('muteButton');
+    const deafenButton = document.getElementById('deafenButton');
+    const micIcon = muteButton.querySelector('i');
+    const headsetIcon = deafenButton.querySelector('i');
+
+    micIcon.textContent = isMuted ? 'mic_off' : 'mic';
+    headsetIcon.textContent = isDeafened ? 'headset_off' : 'headset';
+
+    muteButton.classList.toggle('muted', isMuted);
+    deafenButton.classList.toggle('muted', isDeafened);
+  }
+
+  function toggleMute() {
+    if (!localStream) return;
+    isMuted = !isMuted;
+    localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
+    updateVoiceButtonStates();
+    showNotification(isMuted ? 'Microfone desativado' : 'Microfone ativado', 'info');
+
+    if (roomName && playerName) {
+      database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`).update({ isMuted });
+    }
+  }
+
+  function toggleDeafen() {
+    isDeafened = !isDeafened;
+    Object.values(peerConnections).forEach(pc => {
+      const audioElement = document.querySelector(`[data-peer-id="${pc.peerId}"]`);
+      if (audioElement) audioElement.muted = isDeafened;
+    });
+    updateVoiceButtonStates();
+    showNotification(isDeafened ? 'Áudio desativado' : 'Áudio ativado', 'info');
+
+    if (roomName && playerName) {
+      database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`).update({ isDeafened });
+    }
+  }
+
+  async function initVoiceChat() {
+    try {
+      if (!await initAudioContext()) throw new Error('Falha no contexto de áudio');
+
+      localStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      });
+
+      await setupAudioStream(localStream);
+      if (isMuted) localStream.getAudioTracks().forEach(track => track.enabled = false);
+
+      updateVoiceButtonStates();
+      showNotification('Chat de voz iniciado!', 'success');
+
+      if (roomName && playerName) {
+        database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`).update({
+          isMuted, isDeafened, hasAudio: true
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      showNotification('Erro ao acessar microfone', 'error');
+      if (roomName && playerName) {
+        database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`).update({ hasAudio: false });
       }
     }
+  }
 
-    function showNotification(message, type = 'info') {
-      const notification = document.createElement('div');
-      notification.className = `notification ${type}`;
-      notification.textContent = message;
-      document.body.appendChild(notification);
-      setTimeout(() => notification.remove(), 3000);
+  async function createPeerConnection(remotePlayerName) {
+    if (peerConnections[remotePlayerName]) return;
+
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+      ]
+    });
+
+    pc.peerId = remotePlayerName;
+    peerConnections[remotePlayerName] = pc;
+
+    if (localStream) {
+      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
     }
 
-    function updatePlayersUI(players) {
-      const currentPlayerInfo = document.getElementById('currentPlayerInfo');
-      const otherPlayersInfo = document.getElementById('otherPlayersInfo');
-      
-      currentPlayerInfo.innerHTML = '';
-      otherPlayersInfo.innerHTML = '';
-      
-      for (const playerKey in players) {
-        const player = players[playerKey];
-        const playerElement = document.createElement('div');
-        playerElement.className = 'player-item';
-        
-        const avatar = document.createElement('div');
-        avatar.className = 'player-avatar';
-        avatar.textContent = player.name[0].toUpperCase();
-        
-        const info = document.createElement('div');
-        info.className = 'player-info';
-        info.innerHTML = `
+    const audioElem = document.createElement('audio');
+    audioElem.autoplay = true;
+    audioElem.dataset.peerId = remotePlayerName;
+    audioElem.volume = document.getElementById('volumeSlider').value / 100;
+    audioElem.muted = isDeafened;
+    document.body.appendChild(audioElem);
+
+    pc.ontrack = (event) => {
+      audioElem.srcObject = event.streams[0];
+    };
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        database.ref(`multiplayer/rooms/${roomName}/candidates/${playerName}_${remotePlayerName}`).push({
+          candidate: event.candidate.toJSON()
+        });
+      }
+    };
+
+    pc.onconnectionstatechange = () => {
+      if (['disconnected', 'failed'].includes(pc.connectionState)) {
+        closePeerConnection(remotePlayerName);
+      }
+    };
+
+    return pc;
+  }
+
+  function closePeerConnection(remotePlayerName) {
+    const pc = peerConnections[remotePlayerName];
+    if (pc) {
+      const audioElem = document.querySelector(`[data-peer-id="${remotePlayerName}"]`);
+      if (audioElem) audioElem.remove();
+      pc.close();
+      delete peerConnections[remotePlayerName];
+    }
+  }
+
+  // -----------------------------
+  // Funções Auxiliares
+  // -----------------------------
+
+  function showNotification(message, type = 'info') {
+    const n = document.createElement('div');
+    n.className = `notification ${type}`;
+    n.textContent = message;
+    document.body.appendChild(n);
+    setTimeout(() => n.remove(), 3000);
+  }
+
+  async function initAudioContext() {
+    try {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      volumeNode = audioContext.createGain();
+      volumeNode.connect(audioContext.destination);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function setupAudioStream(stream) {
+    if (!audioContext) await initAudioContext();
+    const source = audioContext.createMediaStreamSource(stream);
+    source.connect(volumeNode);
+  }
+
+  function updateVolume(value) {
+    if (volumeNode) volumeNode.gain.value = value / 100;
+    Object.values(peerConnections).forEach(pc => {
+      const audioElement = document.querySelector(`[data-peer-id="${pc.peerId}"]`);
+      if (audioElement) audioElement.volume = value / 100;
+    });
+  }
+
+  document.getElementById('volumeSlider').addEventListener('input', (e) => {
+    updateVolume(e.target.value);
+  });
+
+  // -----------------------------
+  // Lógica de Jogador
+  // -----------------------------
+
+  function updatePlayersUI(players) {
+    const currentPlayerInfo = document.getElementById('currentPlayerInfo');
+    const otherPlayersInfo = document.getElementById('otherPlayersInfo');
+    currentPlayerInfo.innerHTML = '';
+    otherPlayersInfo.innerHTML = '';
+
+    for (const playerKey in players) {
+      const player = players[playerKey];
+      const el = document.createElement('div');
+      el.className = 'player-item';
+      el.innerHTML = `
+        <div class="player-avatar">${player.name[0].toUpperCase()}</div>
+        <div class="player-info">
           <div>${player.name}</div>
           <div>${player.currency} Teias (x${player.clickMultiplier})</div>
-        `;
-        
-        const controls = document.createElement('div');
-        controls.className = 'player-controls';
-        
-        if (player.isMuted) {
-          const mutedIcon = document.createElement('i');
-          mutedIcon.className = 'material-icons';
-          mutedIcon.textContent = 'mic_off';
-          controls.appendChild(mutedIcon);
-        }
-        
-        playerElement.appendChild(avatar);
-        playerElement.appendChild(info);
-        playerElement.appendChild(controls);
-        
-        if (playerKey === playerName) {
-          currentPlayerInfo.appendChild(playerElement);
-        } else {
-          otherPlayersInfo.appendChild(playerElement);
-        }
-      }
+        </div>
+        <div class="player-controls">
+          ${player.isMuted ? '<i class="material-icons">mic_off</i>' : ''}
+        </div>
+      `;
+      if (playerKey === playerName) currentPlayerInfo.appendChild(el);
+      else otherPlayersInfo.appendChild(el);
     }
+  }
 
-    // Função para gerenciar novos jogadores
-    async function handleNewPlayer(remotePlayerName) {
-      if (remotePlayerName === playerName) return; // Ignorar o próprio jogador
-      
-      try {
-        // Criar conexão WebRTC
-        const pc = await createPeerConnection(remotePlayerName);
-        if (!pc) return;
-        
-        // Criar e enviar oferta
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        
-        // Enviar oferta para o Firebase
-        await database.ref(`multiplayer/rooms/${roomName}/offers/${playerName}_${remotePlayerName}`).set({
-          type: offer.type,
-          sdp: offer.sdp
-        });
-        
-        console.log(`Oferta enviada para ${remotePlayerName}`);
-        
-      } catch (error) {
-        console.error(`Erro ao conectar com ${remotePlayerName}:`, error);
-        showNotification(`Erro ao conectar com ${remotePlayerName}`, 'error');
-      }
+  async function handleNewPlayer(remotePlayerName) {
+    if (remotePlayerName === playerName) return;
+    try {
+      const pc = await createPeerConnection(remotePlayerName);
+      if (!pc) return;
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      await database.ref(`multiplayer/rooms/${roomName}/offers/${playerName}_${remotePlayerName}`).set({
+        type: offer.type, sdp: offer.sdp
+      });
+    } catch (err) {
+      showNotification(`Erro ao conectar com ${remotePlayerName}`, 'error');
     }
+  }
 
-    function joinRoom(roomName) {
-      playerName = prompt("Digite seu nome:");
-      if (playerName) {
-        initVoiceChat().then(() => {
-          const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
-          playerRef.set({
-            name: playerName,
-            currency: currency,
-            clickMultiplier: clickMultiplier,
-            isMuted: false
-          });
+  function joinRoom(roomName) {
+    playerName = prompt("Digite seu nome:");
+    if (!playerName) return;
 
-          playerRef.onDisconnect().remove();
-
-          const roomRef = database.ref(`multiplayer/rooms/${roomName}/players`);
-          roomRef.on('value', (snapshot) => {
-            const players = snapshot.val();
-            updatePlayersUI(players);
-            
-            // Configurar conexões WebRTC com novos jogadores
-            if (players) {
-              Object.keys(players).forEach(playerKey => {
-                if (playerKey !== playerName) {
-                  handleNewPlayer(playerKey);
-                }
-              });
-            }
-          });
-
-          // Mostrar o botão "Sair da Sala"
-          document.getElementById('leaveRoomButton').style.display = 'block';
-
-          // Iniciar o chat
-          listenToChat();
-          
-          // Escutar ofertas WebRTC
-          database.ref(`multiplayer/rooms/${roomName}/offers`).on('child_added', async (snapshot) => {
-            const [sender, receiver] = snapshot.key.split('_');
-            if (receiver === playerName) {
-              const pc = await createPeerConnection(sender);
-              const offer = snapshot.val();
-              await pc.setRemoteDescription(new RTCSessionDescription(offer));
-              const answer = await pc.createAnswer();
-              await pc.setLocalDescription(answer);
-              
-              database.ref(`multiplayer/rooms/${roomName}/answers/${receiver}_${sender}`).set({
-                sdp: answer.sdp,
-                type: answer.type
-              });
-            }
-          });
-          
-          // Escutar respostas WebRTC
-          database.ref(`multiplayer/rooms/${roomName}/answers`).on('child_added', async (snapshot) => {
-            const [sender, receiver] = snapshot.key.split('_');
-            if (receiver === playerName) {
-              const pc = peerConnections[sender];
-              if (pc) {
-                const answer = snapshot.val();
-                await pc.setRemoteDescription(new RTCSessionDescription(answer));
-              }
-            }
-          });
-          
-          // Escutar ICE candidates
-          database.ref(`multiplayer/rooms/${roomName}/candidates`).on('child_added', async (snapshot) => {
-            const [sender, receiver] = snapshot.key.split('_');
-            if (receiver === playerName) {
-              const pc = peerConnections[sender];
-              if (pc) {
-                const candidates = snapshot.val();
-                for (const key in candidates) {
-                  const candidate = candidates[key];
-                  await pc.addIceCandidate(new RTCIceCandidate(candidate.candidate));
-                }
-              }
-            }
-          });
-        });
-      }
-    }
-
-    function leaveRoom() {
-      // Limpar conexões WebRTC
-      Object.keys(peerConnections).forEach(closePeerConnection);
-      
-      // Parar stream local
-      if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        localStream = null;
-      }
-      
-      // Limpar contexto de áudio
-      if (volumeNode) {
-        volumeNode.disconnect();
-        volumeNode = null;
-      }
-      if (audioContext) {
-        audioContext.close();
-        audioContext = null;
-      }
-      
-      // Remover referência do jogador
+    initVoiceChat().then(() => {
       const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
-      playerRef.remove().then(() => {
-        showNotification('Você saiu da sala', 'info');
-        location.reload();
+      playerRef.set({ name: playerName, currency, clickMultiplier, isMuted: false });
+      playerRef.onDisconnect().remove();
+
+      const roomRef = database.ref(`multiplayer/rooms/${roomName}/players`);
+      roomRef.on('value', (snapshot) => {
+        const players = snapshot.val();
+        if (players) {
+          updatePlayersUI(players);
+          Object.keys(players).forEach(k => { if (k !== playerName) handleNewPlayer(k); });
+        }
       });
+
+      document.getElementById('leaveRoomButton').style.display = 'block';
+      listenToChat();
+
+      // Ofertas
+      database.ref(`multiplayer/rooms/${roomName}/offers`).on('child_added', async (snap) => {
+        const [sender, receiver] = snap.key.split('_');
+        if (receiver === playerName) {
+          const pc = await createPeerConnection(sender);
+          const offer = snap.val();
+          await pc.setRemoteDescription(new RTCSessionDescription(offer));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          database.ref(`multiplayer/rooms/${roomName}/answers/${receiver}_${sender}`).set(answer);
+        }
+      });
+
+      // Respostas
+      database.ref(`multiplayer/rooms/${roomName}/answers`).on('child_added', async (snap) => {
+        const [sender, receiver] = snap.key.split('_');
+        if (receiver === playerName) {
+          const pc = peerConnections[sender];
+          if (pc) await pc.setRemoteDescription(new RTCSessionDescription(snap.val()));
+        }
+      });
+
+      // ICE
+      database.ref(`multiplayer/rooms/${roomName}/candidates`).on('child_added', async (snap) => {
+        const [sender, receiver] = snap.key.split('_');
+        if (receiver === playerName) {
+          const pc = peerConnections[sender];
+          if (pc) {
+            const candidates = snap.val();
+            for (const k in candidates) {
+              await pc.addIceCandidate(new RTCIceCandidate(candidates[k].candidate));
+            }
+          }
+        }
+      });
+    });
+  }
+
+  function leaveRoom() {
+    Object.keys(peerConnections).forEach(closePeerConnection);
+    if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+    if (volumeNode) { volumeNode.disconnect(); volumeNode = null; }
+    if (audioContext) { audioContext.close(); audioContext = null; }
+
+    const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
+    playerRef.remove().then(() => location.reload());
+  }
+
+  function increaseCurrency() {
+    currency += clickMultiplier;
+    updateDisplays();
+    if (roomName && playerName) {
+      database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`).update({ currency });
     }
+  }
 
-    // Função para aumentar a moeda
-    function increaseCurrency() {
-      currency += clickMultiplier;
-      updateDisplays();
+  function updateDisplays() {
+    document.getElementById('currencyDisplay').textContent = `Teias: ${currency}`;
+    document.getElementById('bonusDisplay').textContent = `x${clickMultiplier} Bonus`;
+  }
 
-      // Atualizar no Firebase
-      if (roomName && playerName) {
-        const playerRef = database.ref(`multiplayer/rooms/${roomName}/players/${playerName}`);
-        playerRef.update({ currency: currency });
-      }
-    }
+  window.onload = () => { showRoomChoiceAlert(); closeChatModal(); };
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const rightPanel = document.querySelector(".right-panel");
+    const toggleBtn = document.querySelector("#toggle-panel");
 
-    // Função para atualizar os displays
-    function updateDisplays() {
-      document.getElementById('currencyDisplay').textContent = `Teias: ${currency}`;
-      document.getElementById('bonusDisplay').textContent = `x${clickMultiplier} Bonus`;
-    }
-
-    // Atualizar o cursor
-    const cursor = document.getElementById('cursor');
-    document.addEventListener('mousemove', (e) => {
-      cursor.style.left = `${e.pageX}px`;
-      cursor.style.top = `${e.pageY}px`;
+    // Clique no botão para abrir/fechar
+    toggleBtn.addEventListener("click", () => {
+      rightPanel.classList.toggle("open");
     });
 
-    // Exibir o alerta de escolha ao carregar a página
-    window.onload = () => {
-      showRoomChoiceAlert();
-    };
+    // Fechar painel clicando fora (overlay opcional)
+    const overlay = document.querySelector(".overlay");
+    if (overlay) {
+      overlay.addEventListener("click", () => {
+        rightPanel.classList.remove("open");
+        overlay.style.display = "none";
+      });
 
-    // Configuração do Firebase para o chat de voz
-    function setupVoiceChatListeners() {
-        if (!currentUser || !roomName) return;
-
-        const roomRef = firebase.database().ref(`rooms/${roomName}/users`);
-        
-        // Ouvir mudanças nos estados de áudio dos usuários
-        roomRef.on('child_changed', (snapshot) => {
-            const userData = snapshot.val();
-            const userId = snapshot.key;
-            
-            if (userId !== currentUser.uid) {
-                updateRemoteUserAudioState(userId, userData);
-            }
-        });
-        
-        // Ouvir entrada de novos usuários
-        roomRef.on('child_added', (snapshot) => {
-            const userData = snapshot.val();
-            const userId = snapshot.key;
-            
-            if (userId !== currentUser.uid) {
-                setupPeerConnection(userId);
-                updateRemoteUserAudioState(userId, userData);
-            }
-        });
-        
-        // Ouvir saída de usuários
-        roomRef.on('child_removed', (snapshot) => {
-            const userId = snapshot.key;
-            if (peerConnections[userId]) {
-                closePeerConnection(userId);
-            }
-        });
-    }
-
-    function updateRemoteUserAudioState(userId, userData) {
-        const audioElement = document.querySelector(`[data-peer-id="${userId}"]`);
-        if (audioElement) {
-            // Atualizar o estado do áudio remoto baseado nas configurações do usuário
-            audioElement.muted = isDeafened || userData.isMuted;
-        }
-        
-        // Atualizar indicadores visuais
-        updateRemoteUserIndicators(userId, userData);
-    }
-
-    function updateRemoteUserIndicators(userId, userData) {
-        const userElement = document.querySelector(`[data-user-id="${userId}"]`);
-        if (userElement) {
-            const micIcon = userElement.querySelector('.mic-indicator');
-            const headsetIcon = userElement.querySelector('.headset-indicator');
-            
-            if (micIcon) {
-                micIcon.textContent = userData.isMuted ? 'mic_off' : 'mic';
-                micIcon.classList.toggle('muted', userData.isMuted);
-            }
-            
-            if (headsetIcon) {
-                headsetIcon.textContent = userData.isDeafened ? 'headset_off' : 'headset';
-                headsetIcon.classList.toggle('muted', userData.isDeafened);
-            }
-        }
-    }
-
-    // Função para limpar as conexões ao sair da sala
-    function cleanupVoiceChat() {
-        if (localStream) {
-            localStream.getTracks().forEach(track => track.stop());
-            localStream = null;
-        }
-        
-        Object.keys(peerConnections).forEach(closePeerConnection);
-        peerConnections = {};
-        
-        if (currentUser && roomName) {
-            const userRef = firebase.database().ref(`rooms/${roomName}/users/${currentUser.uid}`);
-            userRef.remove();
-        }
-    }
-
-    // Função para inicializar o contexto de áudio
-    async function initAudioContext() {
-      try {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        volumeNode = audioContext.createGain();
-        volumeNode.connect(audioContext.destination);
-        return true;
-      } catch (error) {
-        console.error('Erro ao inicializar contexto de áudio:', error);
-        showNotification('Erro ao inicializar áudio', 'error');
-        return false;
-      }
-    }
-
-    // Função para configurar stream de áudio
-    async function setupAudioStream(stream) {
-      if (!audioContext) {
-        if (!await initAudioContext()) return;
-      }
-      
-      const source = audioContext.createMediaStreamSource(stream);
-      source.connect(volumeNode);
-    }
-
-    // Função para atualizar volume
-    function updateVolume(value) {
-      if (volumeNode) {
-        volumeNode.gain.value = value / 100;
-      }
-      
-      // Atualizar volume dos peers
-      Object.values(peerConnections).forEach(pc => {
-        const audioElement = document.querySelector(`[data-peer-id="${pc.peerId}"]`);
-        if (audioElement) {
-          audioElement.volume = value / 100;
+      toggleBtn.addEventListener("click", () => {
+        if (rightPanel.classList.contains("open")) {
+          overlay.style.display = "block";
+        } else {
+          overlay.style.display = "none";
         }
       });
     }
-
-    // Atualizar listener do volume
-    document.getElementById('volumeSlider').addEventListener('input', (e) => {
-      updateVolume(e.target.value);
-    });
-  </script>
+  });
+</script>
 </body>
 </html>
